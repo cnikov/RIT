@@ -1,9 +1,14 @@
 import yaml
 # import required module
+import src.gui as Gui
+import src.parser_1 as parser_1
+import src.compare as compare
+
 import os
 import re
 import pandas as pd
 import sys
+
 zip_directory = sys.argv[1]
 from zipfile import ZipFile 
   
@@ -15,7 +20,11 @@ with ZipFile(zip_directory, 'r') as zObject:
     zObject.extractall(
         path = "myfolder"
     ) 
-directory = "myfolder"
+tmppath = "myfolder"
+for filename in os.listdir(tmppath):
+    directory = os.path.join(tmppath, filename)
+print(directory)
+
 # assign directory
 
  
@@ -183,7 +192,6 @@ for filename in os.listdir(directory):
             rules = yaml.safe_load(file)     
 
             item = rules["rules"]
-            print(item)
             # print(item)
             finaltree = ""
             for labels in item[0]:
@@ -192,7 +200,7 @@ for filename in os.listdir(directory):
                 elif labels == "pattern-either" : 
                     finaltree = "OR(" + buildTree(item[0][labels]) + ")"
                 elif "pattern" in labels : 
-                    print(labels)
+         
                     finaltree = "(" + buildTree([{labels:item[0][labels]}]) + ")"
                     finaltree = finaltree.replace("\n", "\\n")
 
@@ -206,6 +214,7 @@ df = df.replace("',", "';", regex=True)
 
 df.to_csv('out2.csv',index=False) 
 
+Gui.run_gui()
                     
                     
 

@@ -1,10 +1,12 @@
 const express = require("express");
+let {PythonShell} = require('python-shell');
 const fileUpload = require("express-fileupload");
 const path = require("path");
 const filesPayloadExists = require('./middleware/filesPayloadExists');
 const fileExtLimiter = require('./middleware/fileExtLimiter');
 const fileSizeLimiter = require('./middleware/fileSizeLimiter');
 const cors = require('cors');
+
 
 const PORT = process.env.PORT || 3500;
 
@@ -20,16 +22,32 @@ app.post('/upload',
     filesPayloadExists,
     fileExtLimiter(['.pdf','.zip','.rar']),
     fileSizeLimiter,
+    
     (req, res) => {
+
         const files = req.files
-        console.log(files)
-        console.log(res)
+       
+          
+        let filename = "";
         Object.keys(files).forEach(key =>{
             const filepath = path.join(__dirname,'files',files[key].name)
+            filename = filepath
             files[key].mv(filepath, (err) =>{
                 if (err) return res.status(500).json({status: "error", message:err})
             })
         })
+        let options = {
+            args:[filename,"jill"]
+        
+          }
+        console.log("heelllllo");
+        PythonShell.run("python/tree.py",options).then(results =>{
+            // result is an array consisting of messages collected 
+            console.log("heelllllo");
+            console.log(results)
+            //during execution of script.
+      });
+        
         res.send("ok")
     }
     )
