@@ -2,6 +2,8 @@ import pandas as pd
 import csv
 import numpy as np
 import re
+from src.relation import *
+from src.rule_set import *
 # Define a TreeNode class to represent nodes in the semantic tree.
 # with open("out2.csv", 'r') as csv_file:
 #     reader = csv.DictReader(csv_file)
@@ -85,6 +87,20 @@ def parse_tree(tree_list):
             root.children.append(child)
         index +=1
     return root
+def rebuild(tree):
+    res=tree.value
+    if len(tree.children) == 0:
+        return res
+    else : 
+        res += "("
+        for child in tree.children:
+            if child.children == []:
+                res += child.value
+                res += ";"
+            else:
+                res = res + '(' + rebuild(child) + ');'
+    return res + ')'
+
 
 
 

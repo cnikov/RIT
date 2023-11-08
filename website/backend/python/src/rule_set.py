@@ -29,7 +29,7 @@ class RuleSet:
             for k in range(1,self.m):
                 for i in range(self.n):
                     for j in range(i+1,self.n):
-                        self.idm[k,i,j] = self._val_IDC(self.set.iloc[i,k],self.set.iloc[j,k])
+                        self.idm[k,i,j] = self._val_IDC(self.set.iloc[i,k],self.set.iloc[j,k],self.set.iloc[i,0],self.set.iloc[j,0])
             #fill in IDC's for recommendation relationships
             for i in range(self.n):
                 for j in range(i+1,self.n):
@@ -43,7 +43,7 @@ class RuleSet:
             return False
 
     # Helper methods to build rule set
-    def _val_IDC(self, val1, val2):
+    def _val_IDC(self, val1, val2,n1,n2):
         #Check for nan values
         if not isinstance(val1,str) and not isinstance(val2,str):
             if pd.isna(val1) and pd.isna(val2):
@@ -59,7 +59,7 @@ class RuleSet:
         #Both values are valid (not nan) and have the same type
         
         elif isinstance(val1,str):
-            return self._interval(val1,val2)
+            return self._interval(val1,val2,n1,n2)
 
 
     def escape(self,string):
@@ -145,7 +145,7 @@ class RuleSet:
         for node2 in t2:
             check = False
             for node1 in t1:
-                if self._compare(node1.value,node2.value) == Relation.EQUALITY.value: 
+                if self._compare(node1.value,node2.value) == Relation.EQUALITY.value and (node2.value != '' and node1.value !='\\n') and ( node1.value !='...' and node2.value !='...' and not(self.isMeta(node1.value) or self.isMeta(node2.value))): 
                     check = self._contains2(node1.children,node2.children)
             if check == False:
                 return False      
@@ -155,8 +155,9 @@ class RuleSet:
         for node2 in tree2:
             child = []
             for node1 in range(len(tree1)):
-                if self._compare(tree1[node1].value,node2.value) == Relation.EQUALITY.value:
+                if self._compare(tree1[node1].value,node2.value) == Relation.EQUALITY.value and (node2.value != '' and tree1[node1].value !='\\n') and ( tree1[node1].value !='...' and node2.value !='...' and not(self.isMeta(tree1[node1].value) or self.isMeta(node2.value))):
                     if self._contains2(tree1[node1].children,node2.children) == True:
+
                         return True
                     else : 
                         for item in tree1[node1].children : 
@@ -169,7 +170,7 @@ class RuleSet:
             else :return False
 
     def _equals(self,tree1,tree2):
-        if self._compare(tree1.value,tree2.value) == Relation.EQUALITY.value:
+        if self._compare(tree1.value,tree2.value) == Relation.EQUALITY.value and (tree2.value != '' and tree1.value !='\\n') and ( tree1.value !='...' and tree2.value !='...' and not(self.isMeta(tree1.value) or self.isMeta(tree2.value))):
             if(len(tree1.children) != len(tree2.children)):
                 return False
             for i in range(len(tree1.children)):
@@ -179,50 +180,99 @@ class RuleSet:
         else : 
             return False
 
-
+    def isMeta(self,string):
+        if string[0] == '$':
+            if(string[1:].isupper()) : 
+                return True
+            return False
+        else: return False
     #tell if overlap 
     #TODO : ADD a way to check how much the trees overlaps  
+    def _overlap2(self,sub1,sub2):
+        tmpTree = TreeNode(sub2.value)
+        if sub1 == sub2: 
+            return tmpTree
+        for node2 in sub2.children:
+            for node1 in sub1.children:
+                if self._compare(node1.value,node2.value) == Relation.EQUALITY.value and (node2.value!= '' and node1.value!='\\n') and ( node1.value!='...' and node2.value!='...' and not(self.isMeta(node1.value) or self.isMeta(node2.value))):
+                    tmpval = self._overlap2(node1,node2)
+                    if tmpval != None : 
+                        if not ((tmpval.value == 'OR' or tmpval.value == 'AND' or tmpval.value == 'NOT') and tmpval.children == []):
+                            tmpTree.children.append(tmpval)
+        if (tmpTree.value == 'OR' or tmpTree.value == 'AND' or tmpTree.value == 'NOT') and tmpTree.children == []:
+            return None
+        return tmpTree
+
     def _overlap(self,tree1,tree2):
         child1=[]
+        subtreeList = []
         for n2 in tree2:
             child2 = []
             
             for node1 in tree1:
-                if self._compare(node1.value,n2.value) == Relation.EQUALITY.value :
+                if self._compare(node1.value,n2.value) == Relation.EQUALITY.value and (n2.value != '' and node1.value !='\\n') and ( node1.value !='...' and n2.value !='...' and not(self.isMeta(node1.value) or self.isMeta(n2.value))):
                     if n2.value == "OR" or n2.value == "AND" or n2.value == "NOT": 
+                        myl = []
                         for elem1 in node1.children:
                             for elem2 in n2.children:
-                                if self._compare(elem1.value,elem2.value) == Relation.EQUALITY.value and (elem2.value != "AND" and elem2.value !="OR" and elem2.value != "NOT"):
-                                    print(elem1.value)
-                                    return True
-                    else:    
-                        return True
+                                if self._compare(elem1.value,elem2.value) == Relation.EQUALITY.value and (elem2.value != '' and elem2.value !="\\n"):
+                                    if( elem1.value !='...' and elem2.value !='...' and not(self.isMeta(elem1.value) or self.isMeta(elem2.value))) : 
+                                        # print(elem1.value + ' is equal to ' + elem2.value)
+                                        # In this case the similar nodes are from a similar parent so it can start a subtree that overlap we have to check the neighbours to find if there are other overlapping node from this parent.
+                                        # check the whole childrens
+                                   
+                                        myl.append((elem1,elem2))
+                                        
+                        if myl != [] :
+                            tmpTree = TreeNode(n2.value) 
+                            # Here create the subtrees that overlaps
+                            for sub in myl : 
+                                tmpVal = self._overlap2(sub[0],sub[1])
+                            
+                                if tmpVal != None and tmpVal.children != [] :
+                                    tmpTree.children.append(tmpVal)
+                            if tmpTree.children != []:
+                                subtreeList.append(tmpTree)
+            
+                                
+    
+                    # else:  
+                    #     # print(node1.value + ' is equal to ' + n2.value)  
+                    #     # In this case the parent is not a condition node so this is a single node in common not interesting 
+                    #     return True
                 
                 elif node1.children != []:
                     for item in node1.children : 
                         child2.append(item) 
+            
             if child2 != []:
                 return self._overlap(child2,tree2) 
             child2 = []
 
             for item in n2.children : 
                         child1.append(item) 
+        if len(subtreeList) <2: 
+            return subtreeList
         if child1 != []:
             return(self._overlap(tree1,child1))
-        return False
+        return subtreeList
 
 
-    def _interval(self,val1, val2):
+
+    def _interval(self,val1, val2,n1,n2):
         t1 = parse_tree(parse(val1)[0])
         t2 = parse_tree(parse(val2)[0])
         if (self._equals(t1,t2)):
-            print("egalite")
             return Relation.EQUALITY.value
         elif(self._contains1([t1],[t2])):
             return Relation.INCLUSION_IJ.value
         elif(self._contains1([t2],[t1])):
             return Relation.INCLUSION_JI.value
-        elif(self._overlap([t1],[t2]) or self._overlap([t1],[t2])):
+        elif( self._overlap([t1],[t2]) != [] ):
+            v = self._overlap([t1],[t2])
+            print(n1)
+            print(n2)
+            print(rebuild(v[0]))
             return Relation.OVERLAP.value
         else: 
             return Relation.DIFFERENCE.value     

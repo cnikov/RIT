@@ -49,7 +49,6 @@ def parse_interval(val, key):
         else : 
             left_str+=val[i]
             i+=1 
-    print(key)
     if key == "metavariable" or key == "metavariable-pattern" or key == "metavariable-pattern-not" or key == "metavariable-pattern-either":
         #for each metavariable
         #problem if VAL and VALUE in the same rule... need a full match but if one is shorter -->  start with the longer ones and replace them direclty

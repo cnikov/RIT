@@ -8,6 +8,11 @@ import os
 import re
 import pandas as pd
 import sys
+import shutil
+
+path_to_folder = "myfolder"
+if os.path.exists(path_to_folder) and os.path.isdir(path_to_folder):
+    shutil.rmtree(path_to_folder)
 
 zip_directory = sys.argv[1]
 from zipfile import ZipFile 
@@ -20,17 +25,16 @@ with ZipFile(zip_directory, 'r') as zObject:
     zObject.extractall(
         path = "myfolder"
     ) 
-tmppath = "myfolder"
+tmppath = "myfolder/"
 for filename in os.listdir(tmppath):
     directory = os.path.join(tmppath, filename)
-print(directory)
 
+# directory = "../myfolder/semgrep-rules"
 # assign directory
 
  
 # iterate over files in
 # that directory
-
 def parse(tree_str):
     counter = 0
     tree_lst = []
@@ -85,7 +89,9 @@ def find_occ(string,val,counter):
     for i in range(len(string)-len(val)):
         if string[i:i+len(val)] == val:
             l.append(i)
-    return l[counter]
+    if(l != []):        
+        return l[counter-1]
+    return 0
 
 
 def inside_replace(inside,pattern):
@@ -101,8 +107,13 @@ def inside_replace(inside,pattern):
                         for nest in pattern[items][key]:
                             for key2 in nest:
                                 # print(nest)
-                                d2["pattern-either"].append({key2:inside[:count]+nest[key2] +inside[count+1:]})
-                    else:
+                                if type(nest[key2]) == list:
+                                    for e in nest[key2]: 
+                                        for k in e:
+                                            d2["pattern-either"].append({key2:inside[:count]+e[k] +inside[count+1:]})
+                                else: 
+                                    d2["pattern-either"].append({key2:inside[:count]+nest[key2] +inside[count+1:]})
+                    elif type(pattern[items][key]) == str:
                         d2["pattern-either"].append({key:inside[:count]+pattern[items][key] +inside[count+1:]})
             d.append(d2)
 
@@ -114,9 +125,15 @@ def inside_replace(inside,pattern):
                     for nest in pattern[items][key]:
                         for key2 in nest : 
                             # print(nest)
-                            d3[key].append({key2:inside[:count]+nest[key2] +inside[count+1:] })
+                            if type(nest[key2]) == list : 
+                                for e in nest[key2]: 
+                                    for k in e:
+                                        if type(e[k] )== str:
+                                            d3[key].append({key2:inside[:count]+e[k] +inside[count+1:]})
+                            else:
+                                d3[key].append({key2:inside[:count]+nest[key2] +inside[count+1:] })
                     d.append(d3)
-                else: 
+                elif type(pattern[items][key]) ==str: 
                     d.append({key:inside[:count]+pattern[items][key] +inside[count+1:]})     
     return d
 
@@ -144,32 +161,35 @@ def buildInsideTree(inside,patterns):
 def buildTree(pattern):
     tree = ""
     index = 0 
+    inside  = 0 
     for items in pattern :
-
+        
         for labels in items :  
-            if type(items[labels]) == list:
-                if labels == "patterns" : 
-                    tree += "AND(" + buildTree(items[labels]) + ");"
-                elif labels == "pattern-either" : 
-                    tree += "OR(" + buildTree(items[labels])+");"
-            else : 
-                if labels == "pattern-inside": 
-                    tree+= buildTree(buildInsideTree(items,pattern[index+1:])) +";"
-                elif labels == "pattern-not-regex":
-                    tree += "NOT(r:"+items[labels]+");"
-                elif labels == "pattern-not":
-                    tree += "NOT("+items[labels]+");"
-                elif "regex" in labels and "metavariable" not in labels : 
-                    tree += "r:"+items[labels] + ";"
-                elif labels == "metavariable-pattern" or labels =="metavariable-regex":
-                    for dic in items[labels] : 
-                        for key in dic : 
-                            if "pattern" in key : 
-                                substring =buildTree(items[labels][key])
-                                tree = tree.replace( items[labels]["metavariable"],substring)
-                
-                elif "pattern" in labels:
-                     tree += items[labels] + ";"
+            if inside != 1 : 
+                if type(items[labels]) == list:
+                    if labels == "patterns" : 
+                        tree += "AND(" + buildTree(items[labels]) + ");"
+                    elif labels == "pattern-either" : 
+                        tree += "OR(" + buildTree(items[labels])+");"
+                else : 
+                    if labels == "pattern-inside": 
+                        tree+= buildTree(buildInsideTree(items,pattern[index+1:])) +";"
+                        inside = 1
+                    elif labels == "pattern-not-regex":
+                        tree += "NOT(r:"+items[labels]+");"
+                    elif labels == "pattern-not":
+                        tree += "NOT("+items[labels]+");"
+                    elif "regex" in labels and "metavariable" not in labels : 
+                        tree += "r:"+items[labels] + ";"
+                    elif labels == "metavariable-pattern" or labels =="metavariable-regex":
+                        for dic in items[labels] : 
+                            for key in dic : 
+                                if "pattern" in key : 
+                                    substring =buildTree(items[labels][key])
+                                    tree = tree.replace( items[labels]["metavariable"],substring)
+                    
+                    elif "pattern" in labels:
+                        tree += items[labels] + ";"
         index+=1
     tree  = tree.replace("\n", "\\n")
     return tree[:-1]
@@ -187,11 +207,12 @@ for filename in os.listdir(directory):
     if os.path.isfile(f):
     # if True:
         with open(f, 'r') as file:
-        # with open("odoo-rules/odoo-kn64kbnw.yaml", 'r') as file:
+        # with open("../myfolder/odoo-rules/odoo-cr_execute.yaml", 'r') as file:
 
             rules = yaml.safe_load(file)     
 
             item = rules["rules"]
+         
             # print(item)
             finaltree = ""
             for labels in item[0]:
@@ -200,19 +221,21 @@ for filename in os.listdir(directory):
                 elif labels == "pattern-either" : 
                     finaltree = "OR(" + buildTree(item[0][labels]) + ")"
                 elif "pattern" in labels : 
-         
+            
                     finaltree = "(" + buildTree([{labels:item[0][labels]}]) + ")"
                     finaltree = finaltree.replace("\n", "\\n")
 
             # print(finaltree)
-            dataframe["id"].append(item[0]["id"])
-            # dataframe["tree"].append(parse(finaltree)[0])
-            dataframe["tree"].append(finaltree)
+            if finaltree != '()' : 
+                dataframe["id"].append(item[0]["id"])
+                # dataframe["tree"].append(parse(finaltree)[0])
+                dataframe["tree"].append(finaltree)
 df = pd.DataFrame(data=dataframe)
 df = df.replace(' ', '', regex=True)
 df = df.replace("',", "';", regex=True)
 
-df.to_csv('out2.csv',index=False) 
+df.to_csv('out2.csv',index=False)  
+
 
 Gui.run_gui()
                     

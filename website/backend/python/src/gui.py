@@ -22,12 +22,15 @@ def run_gui():
         ruleset.build_PM()
     # Crée une grille de nxn avec des noms de colonnes et de rangées
     # Remplit chaque case de la grille avec une valeur aléatoire
+
     for i in range(ruleset.n):
         for j in range(ruleset.n):
             if ruleset.connection(i, j) !=  Connection.DISCONNECTED : 
                 if ruleset.connection(i, j) != Connection.REFERENCE :
-                    print(ruleset.connection(i, j))
                     print(ruleset.set.iloc[i,0])
+                    print(ruleset.set.iloc[j,0])
+                    print(str(ruleset.connection(i, j)))
+                        
         
         
 
