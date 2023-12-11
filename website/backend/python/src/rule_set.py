@@ -191,7 +191,7 @@ class RuleSet:
     def _overlap2(self,sub1,sub2):
         tmpTree = TreeNode(sub2.value)
         if sub1 == sub2: 
-            return tmpTree
+            return sub2
         for node2 in sub2.children:
             for node1 in sub1.children:
                 if self._compare(node1.value,node2.value) == Relation.EQUALITY.value and (node2.value!= '' and node1.value!='\\n') and ( node1.value!='...' and node2.value!='...' and not(self.isMeta(node1.value) or self.isMeta(node2.value))):
@@ -265,8 +265,14 @@ class RuleSet:
         if (self._equals(t1,t2)):
             return Relation.EQUALITY.value
         elif(self._contains1([t1],[t2])):
+            print(n2)
+            print(n1)
+            print('Connection.INCLUSION')
             return Relation.INCLUSION_IJ.value
         elif(self._contains1([t2],[t1])):
+            print(n1)
+            print(n2)
+            print('Connection.INCLUSION')
             return Relation.INCLUSION_JI.value
         elif( self._overlap([t1],[t2]) != [] ):
             v = self._overlap([t1],[t2])

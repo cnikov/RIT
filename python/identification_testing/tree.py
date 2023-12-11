@@ -4,18 +4,8 @@ import os
 import re
 import pandas as pd
 import sys
-zip_directory = sys.argv[1]
-from zipfile import ZipFile 
-  
-# loading the temp.zip and creating a zip object 
-with ZipFile(zip_directory, 'r') as zObject: 
-  
-    # Extracting all the members of the zip  
-    # into a specific location. 
-    zObject.extractall(
-        path = "myfolder"
-    ) 
-directory = "myfolder"
+
+directory = "semgrep-rules"
 # assign directory
 
  
@@ -76,7 +66,9 @@ def find_occ(string,val,counter):
     for i in range(len(string)-len(val)):
         if string[i:i+len(val)] == val:
             l.append(i)
-    return l[counter]
+    if(l != []):        
+        return l[counter-1]
+    return 0
 
 
 def inside_replace(inside,pattern):
@@ -92,8 +84,13 @@ def inside_replace(inside,pattern):
                         for nest in pattern[items][key]:
                             for key2 in nest:
                                 # print(nest)
-                                d2["pattern-either"].append({key2:inside[:count]+nest[key2] +inside[count+1:]})
-                    else:
+                                if type(nest[key2]) == list:
+                                    for e in nest[key2]: 
+                                        for k in e:
+                                            d2["pattern-either"].append({key2:inside[:count]+e[k] +inside[count+1:]})
+                                else: 
+                                    d2["pattern-either"].append({key2:inside[:count]+nest[key2] +inside[count+1:]})
+                    elif type(pattern[items][key]) == str:
                         d2["pattern-either"].append({key:inside[:count]+pattern[items][key] +inside[count+1:]})
             d.append(d2)
 
@@ -105,9 +102,15 @@ def inside_replace(inside,pattern):
                     for nest in pattern[items][key]:
                         for key2 in nest : 
                             # print(nest)
-                            d3[key].append({key2:inside[:count]+nest[key2] +inside[count+1:] })
+                            if type(nest[key2]) == list : 
+                                for e in nest[key2]: 
+                                    for k in e:
+                                        if type(e[k] )== str:
+                                            d3[key].append({key2:inside[:count]+e[k] +inside[count+1:]})
+                            else:
+                                d3[key].append({key2:inside[:count]+nest[key2] +inside[count+1:] })
                     d.append(d3)
-                else: 
+                elif type(pattern[items][key]) ==str: 
                     d.append({key:inside[:count]+pattern[items][key] +inside[count+1:]})     
     return d
 

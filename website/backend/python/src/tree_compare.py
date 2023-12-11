@@ -93,12 +93,19 @@ def rebuild(tree):
         return res
     else : 
         res += "("
+        index = 0
         for child in tree.children:
             if child.children == []:
+
                 res += child.value
-                res += ";"
+                if index <len(tree.children)-1:
+                    res += ";"
             else:
-                res = res + '(' + rebuild(child) + ');'
+                res = res  + rebuild(child)
+                if index <len(tree.children)-1:
+                    res = res + ';'
+            index+=1
+
     return res + ')'
 
 

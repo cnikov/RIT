@@ -13,10 +13,34 @@
   background: linear-gradient(1deg,#7289da,rgba(255,255,255,0));
 
 }
+.App2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 100vh;
+  background: linear-gradient(1deg,#7289da,rgba(255,255,255,0));
+
+}
+.highlighted-text {
+  background-color: yellow; /* or any other desired highlight style */
+  color: black; /* or any other desired text color */
+}
 .wrapper h1{
   font-size: 27px;
   font-weight: 600;
   text-align: center;
+}
+.App2 button{
+  margin-top: 5%;
+  margin-left: 25vw;
+  border-radius: 0.5rem;
+  border:none;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 400;
+  min-height: 48px;
+  min-width: 6rem;
+
 }
 .wrapper button{
   margin-top: 5%;
@@ -77,7 +101,33 @@ section .row .content{
   color: #6990f2;
 }
 
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #1417cfc0;
+}
 
+nav li {
+  float: left;
+}
+
+nav li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+/* Change the link color to #111 (black) on hover */
+nav li a:hover {
+  background-color: #111;
+}
+nav .active {
+  background-color: #04AA6D;
+}
 
 .upload:hover{
       font-weight: bolder;

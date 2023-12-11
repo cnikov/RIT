@@ -10,9 +10,9 @@ from rule_set import *
 from connection import *
 
 #Global variables
-nbr_rows = 35
+nbr_rows = 80
 nbr_cols = 9
-width = 35
+width = 20
 ruleset = RuleSet([])
 window = None
 colors = {Connection.REFERENCE: 'orchid4', Connection.DISCONNECTED: 'white', Connection.EQUAL_DIFF:'DeepSkyBlue4' , Connection.INCLUSION_DIFF:'DeepSkyBlue3' , Connection.OVERLAP_DIFF:'SkyBlue1' , Connection.EQUAL_SAME:'SpringGreen4' , Connection.INCLUSION_SAME:'SpringGreen3' , Connection.OVERLAP_SAME:'pale green' }
