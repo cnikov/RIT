@@ -6,8 +6,8 @@ import re
 values = None
 
 def parse_val(val, key):
-    '''Parse string value and change it to appropriate type to be manipulated by RuleSet functions
-        Accepted formats: "false" and "true" case insensitive, 'nan', '', "*", string representation of pandas.Interval
+    '''Parse value and convert it to appropriate type.
+       Check for boolean, empty string, nan, pandas Interval, and numbers.
     '''
     if val == '' or val == '*' or val.lower() == 'nan': return float('nan')
     elif val[0] == '(' or val[0] == '[' or val[0] == ']':
@@ -20,7 +20,7 @@ def parse_val(val, key):
             new_val = float(val)
             return new_val
         except ValueError:
-            raise ValueError("Value given doesn't have appropriate format: " + str(val))
+            raise ValueError("Value doesn't have appropriate format: " + str(val))
 
 def parse_interval(val, key):
     #get characteristics of interval (closed on the left-side, right-side, both or neither)
@@ -117,7 +117,6 @@ def parse(tree_str):
                 return tree_lst,index
             else:
                 tmp_str+= tree_str[index]
-                
         elif tree_str[index:index+3] == "AND" or tree_str[index:index+3] == "NOT" :
             tree_lst.append(tree_str[index:index+3])
             mystr, myindex = parse(tree_str[index+4:])
@@ -135,12 +134,16 @@ def parse(tree_str):
         return [tree_str],len(tree_str)
     return tree_lst , index
 
+
+''' 
+Parse csv and returns list of dictionnaries representing the rules
+:params csv_name : string name of the csv file
+:return rules: tree with the rules
+'''
 def parse_csv(csv_name):
-    ''' Parse csv and returns list of dictionnaries representing the rules'''
     rules = []
     with open(csv_name, 'r') as csv_file:
         reader = csv.DictReader(csv_file)
-        
         for r in reader:
             global values
             values = r

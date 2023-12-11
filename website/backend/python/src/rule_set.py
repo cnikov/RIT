@@ -82,6 +82,14 @@ class RuleSet:
         if re.search(r"\\\$", regex1):
             regex1 =  re.sub(r"\\\$[A-Z]+", r".*", regex1)
         return regex1
+    def clean(self,input_string):
+            # Define a pattern to match the specified words and characters
+        pattern = re.compile(r'(AND|OR|NOT|\\\n|\\n|\(|\)|\}|\{|\.\.\.|;)', re.IGNORECASE)
+
+        # Use the pattern to replace matches with an empty string
+        cleaned_string = re.sub(pattern, '', input_string)
+
+        return cleaned_string
 
         
     def _compare(self,val1,val2):
@@ -276,9 +284,13 @@ class RuleSet:
             return Relation.INCLUSION_JI.value
         elif( self._overlap([t1],[t2]) != [] ):
             v = self._overlap([t1],[t2])
+            subtr = rebuild(v[0])
+            clean_tr = self.clean(subtr)
+            if clean_tr =="": 
+                return Relation.DIFFERENCE.value 
             print(n1)
             print(n2)
-            print(rebuild(v[0]))
+            print(subtr)
             return Relation.OVERLAP.value
         else: 
             return Relation.DIFFERENCE.value     

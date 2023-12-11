@@ -15,29 +15,19 @@ from src.connection import *
 ruleset = RuleSet([])
 ## END of popup for check
 def run_gui():
-    rules = parser_1.parse_csv("out2.csv")
-    ruleset = RuleSet(rules)
-    if len(ruleset.idm) == 0:
-        ruleset.build_IDM()
-        ruleset.build_PM()
-    # Crée une grille de nxn avec des noms de colonnes et de rangées
-    # Remplit chaque case de la grille avec une valeur aléatoire
-
-    for i in range(ruleset.n):
+    rules = parser_1.parse_csv("out2.csv") # Load rules from CSV
+    ruleset = RuleSet(rules) # Create rule set object
+    if len(ruleset.idm) == 0: # If IDM is empty
+        ruleset.build_IDM() # Build IDM
+        ruleset.build_PM() # Build PM
+    for i in range(ruleset.n): # Loop through rule set
         for j in range(ruleset.n):
-            if ruleset.connection(i, j) !=  Connection.DISCONNECTED : 
-                if ruleset.connection(i, j) != Connection.REFERENCE :
-                    print(ruleset.set.iloc[i,0])
+            if ruleset.connection(i, j) != Connection.DISCONNECTED : # If connected
+                if ruleset.connection(i, j) != Connection.REFERENCE : # If not reference
+                    print(ruleset.set.iloc[i,0]) # Print rule ID
                     print(ruleset.set.iloc[j,0])
-                    print(str(ruleset.connection(i, j)))
+                    print(str(ruleset.connection(i, j))) # Print connection type
                         
-        
-        
-
-
-                
-    
-
 def erase(window,headers=False,values=False,connections=False):
     if headers:
         [window[(-1,j)].update('') for j in range(nbr_cols)] #empty headers
