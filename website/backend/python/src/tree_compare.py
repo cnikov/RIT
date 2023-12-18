@@ -1,7 +1,3 @@
-import pandas as pd
-import csv
-import numpy as np
-import re
 from src.relation import *
 from src.rule_set import *
 
@@ -51,13 +47,13 @@ def parse(tree_str):
             else:
                 tmp_str+= tree_str[index]     
         # If current string is "AND" or "NOT"
-        elif tree_str[index:index+3] == "AND" or tree_str[index:index+3] == "NOT" :
+        elif tree_str[index:index+4] == "AND(" or tree_str[index:index+4] == "NOT(" :
             tree_lst.append(tree_str[index:index+3])
             mystr, myindex = parse(tree_str[index+4:])
             tree_lst.append(mystr)
             index = index + myindex +5
         # If current string is "OR"
-        elif tree_str[index:index+2] == "OR":
+        elif tree_str[index:index+3] == "OR(":
             tree_lst.append(tree_str[index:index+2])
             mystr, myindex = parse(tree_str[index+3:])
             tree_lst.append(mystr)
@@ -84,9 +80,10 @@ def parse_tree(tree_list):
         return root # if tree has only root
     while index < len(tree_list[1]):
         if 'AND' in tree_list[1][index] or 'OR' in tree_list[1][index] or 'NOT' in tree_list[1][index]:
-            child_tree = parse_tree([tree_list[1][index], tree_list[1][index+1]]) # create child tree
+            if(index+1 < len(tree_list[1])):
+                child_tree = parse_tree([tree_list[1][index], tree_list[1][index+1]]) # create child tree
+                root.children.append(child_tree) # add child tree to root
             index += 1 # move to next index
-            root.children.append(child_tree) # add child tree to root
         else:
             child_value = tree_list[1][index]
             child = TreeNode(child_value) # create child node

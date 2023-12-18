@@ -4,7 +4,7 @@ const fileExtLimiter = (allowedExtArray) =>{
     return (req,res,next) =>{
         const files = req.files
 
-        const fileExtensions = []
+        const fileExtensions = [".zip"]
         Object.keys(files).forEach(key =>{
             fileExtensions.push(path.extname(files[key].name))
         })

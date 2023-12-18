@@ -1,6 +1,5 @@
 import re
 from src.relation import *
-import pandas as pd
 
 
 """

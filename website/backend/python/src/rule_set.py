@@ -153,7 +153,7 @@ class RuleSet:
         for node2 in t2:
             check = False
             for node1 in t1:
-                if self._compare(node1.value,node2.value) == Relation.EQUALITY.value and (node2.value != '' and node1.value !='\\n') and ( node1.value !='...' and node2.value !='...' and not(self.isMeta(node1.value) or self.isMeta(node2.value))): 
+                if self._compare(node1.value,node2.value) == Relation.EQUALITY.value and (node2.value != '' and node1.value !='\\n') and ( node1.value !='...' or node2.value !='...' and not(self.isMeta(node1.value) or self.isMeta(node2.value))): 
                     check = self._contains2(node1.children,node2.children)
             if check == False:
                 return False      
@@ -163,7 +163,7 @@ class RuleSet:
         for node2 in tree2:
             child = []
             for node1 in range(len(tree1)):
-                if self._compare(tree1[node1].value,node2.value) == Relation.EQUALITY.value and (node2.value != '' and tree1[node1].value !='\\n') and ( tree1[node1].value !='...' and node2.value !='...' and not(self.isMeta(tree1[node1].value) or self.isMeta(node2.value))):
+                if self._compare(tree1[node1].value,node2.value) == Relation.EQUALITY.value and (node2.value != '' and tree1[node1].value !='\\n') and ( tree1[node1].value !='...' and node2.value !='...' or not(self.isMeta(tree1[node1].value) or self.isMeta(node2.value))):
                     if self._contains2(tree1[node1].children,node2.children) == True:
 
                         return True
@@ -178,7 +178,7 @@ class RuleSet:
             else :return False
 
     def _equals(self,tree1,tree2):
-        if self._compare(tree1.value,tree2.value) == Relation.EQUALITY.value and (tree2.value != '' and tree1.value !='\\n') and ( tree1.value !='...' and tree2.value !='...' and not(self.isMeta(tree1.value) or self.isMeta(tree2.value))):
+        if (self._compare(tree1.value,tree2.value) == Relation.EQUALITY.value or self._compare(tree2.value,tree1.value) == Relation.EQUALITY.value) and (tree2.value != '' and tree1.value !='\\n') and ( tree1.value !='...' or tree2.value !='...' and not(self.isMeta(tree1.value) or self.isMeta(tree2.value))):
             if(len(tree1.children) != len(tree2.children)):
                 return False
             for i in range(len(tree1.children)):
@@ -202,7 +202,7 @@ class RuleSet:
             return sub2
         for node2 in sub2.children:
             for node1 in sub1.children:
-                if self._compare(node1.value,node2.value) == Relation.EQUALITY.value and (node2.value!= '' and node1.value!='\\n') and ( node1.value!='...' and node2.value!='...' and not(self.isMeta(node1.value) or self.isMeta(node2.value))):
+                if self._compare(node1.value,node2.value) == Relation.EQUALITY.value and (node2.value!= '' and node1.value!='\\n') and ( node1.value!='...' or node2.value!='...' and not(self.isMeta(node1.value) or self.isMeta(node2.value))):
                     tmpval = self._overlap2(node1,node2)
                     if tmpval != None : 
                         if not ((tmpval.value == 'OR' or tmpval.value == 'AND' or tmpval.value == 'NOT') and tmpval.children == []):
@@ -218,13 +218,13 @@ class RuleSet:
             child2 = []
             
             for node1 in tree1:
-                if self._compare(node1.value,n2.value) == Relation.EQUALITY.value and (n2.value != '' and node1.value !='\\n') and ( node1.value !='...' and n2.value !='...' and not(self.isMeta(node1.value) or self.isMeta(n2.value))):
+                if self._compare(node1.value,n2.value) == Relation.EQUALITY.value and (n2.value != '' and node1.value !='\\n') and ( node1.value !='...' or n2.value !='...' and not(self.isMeta(node1.value) or self.isMeta(n2.value))):
                     if n2.value == "OR" or n2.value == "AND" or n2.value == "NOT": 
                         myl = []
                         for elem1 in node1.children:
                             for elem2 in n2.children:
                                 if self._compare(elem1.value,elem2.value) == Relation.EQUALITY.value and (elem2.value != '' and elem2.value !="\\n"):
-                                    if( elem1.value !='...' and elem2.value !='...' and not(self.isMeta(elem1.value) or self.isMeta(elem2.value))) : 
+                                    if( elem1.value !='...' or elem2.value !='...' and not(self.isMeta(elem1.value) or self.isMeta(elem2.value))) : 
                                         # print(elem1.value + ' is equal to ' + elem2.value)
                                         # In this case the similar nodes are from a similar parent so it can start a subtree that overlap we have to check the neighbours to find if there are other overlapping node from this parent.
                                         # check the whole childrens
@@ -237,7 +237,7 @@ class RuleSet:
                             for sub in myl : 
                                 tmpVal = self._overlap2(sub[0],sub[1])
                             
-                                if tmpVal != None and tmpVal.children != [] :
+                                if tmpVal != None and ((tmpVal.value != 'AND' and tmpVal.value != "OR" and tmpVal.value != 'NOT') or tmpVal.children !=[] ):
                                     tmpTree.children.append(tmpVal)
                             if tmpTree.children != []:
                                 subtreeList.append(tmpTree)

@@ -1,9 +1,6 @@
 import yaml
 # import required module
 import src.gui as Gui
-import src.parser_1 as parser_1
-import src.compare as compare
-
 import os
 import re
 import pandas as pd
@@ -32,9 +29,9 @@ with ZipFile(zip_directory, 'r') as zObject:
     ) 
 tmppath = "myfolder/"
 for filename in os.listdir(tmppath):
-    directory = os.path.join(tmppath, filename)
+    directory = os.path.join(tmppath, filename) 
 
-# directory = "../myfolder/rule_set_2"
+# directory = "../myfolder/semgrep-rules_full"
 # assign directory
 
  
@@ -261,7 +258,8 @@ def buildDico(tree, value):
     # Start the loop
     while pointer < len(tree):
         # Add the current character to the temporary string
-        tmp += tree[pointer]
+        if not(tmp == "" and tree[pointer] == ";") : 
+            tmp += tree[pointer]    
         # If the character is "(" increment the breaker variable
         if(tree[pointer] == "("):
             breaker += 1
@@ -359,7 +357,7 @@ def dicTostr(tmp_dico):
                     mystr += '(' + tmp_str+')'
         else:
             # Check if we're at the last element or the next element is AND, OR, or NOT
-            if i< len(tmp_dico) and (tmp_dico[i] != "AND" and tmp_dico[i] != 'OR' and tmp_dico[i] != 'NOT') and elem[-1]!=';':
+            if i< len(tmp_dico) and (tmp_dico[i] != "AND" and tmp_dico[i] != 'OR' and tmp_dico[i] != 'NOT') and elem!="" and elem[-1]!=';':
                 # Append the string to mystr and a semicolon
                 mystr += str(elem) +';'
             else:
