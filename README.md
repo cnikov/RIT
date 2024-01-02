@@ -39,7 +39,7 @@ In the case of you do not want to use the graphical interface it is possible to 
 <a name="usage"></a>
 
 In order to use the tool you have to create a zip archive that contains all the semgrep security rules that needs to be compared. On the main page of the tool it is possible to upload this archive.
-**Warning: this needs to be a .zip archive. **
+**Warning: this needs to be a .zip archive.**
 Once uploaded the algorithm run on the rules and after computing the results it display a list of relation between the rules.
 It is possible to click on results individually to get the two rules that are compared and have an access to an online editor that allows to live modify the rules and download new versions of those rules.
 In case of an overlap relation between two rules the editor will highlight the subtrees that match the overlapping pattern to indicate where to focus for the rule modification
