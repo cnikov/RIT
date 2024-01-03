@@ -51,7 +51,9 @@ function Home() {
       }
       setItem(my_rules);
       sessionStorage.setItem("rules", JSON.stringify(my_rules));
-      document.getElementById("first").style.display = "none";
+      let elem = document.getElementById("first")
+      if (elem) {
+      elem.style.display = "none";}
       setLoading(true);
       clearInterval(id);
     }
